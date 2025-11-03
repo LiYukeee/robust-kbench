@@ -32,7 +32,7 @@ def main(task_dir: str, num_seeds: int = 5):
     # Filter check 6: LLM sanity
     is_redundant, is_inefficient, llm_output = filter_llm_sanity(
         task.module_text,
-        model_name="claude-3-7-sonnet-20250219",
+        model_name="gitee/DeepSeek-V3",
         temperature=0.0,
         max_tokens=8192,
     )

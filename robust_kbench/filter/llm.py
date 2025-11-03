@@ -525,6 +525,50 @@ def query(
         )
         content = response.text
         new_msg_history.append({"role": "model", "parts": content})
+    elif model in [
+        "DeepSeek-V3",
+    ]:
+        # gitee AI
+        new_msg_history = msg_history + [{"role": "user", "content": msg}]
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *new_msg_history,
+            ],
+            stream=False,
+            temperature=temp,
+            max_tokens=max_tokens,
+            top_p=0.8,
+            extra_body={
+                "top_k": 20,
+            },
+            frequency_penalty=1.1,
+        )
+        content = response.choices[0].message.content
+        new_msg_history.append({"role": "assistant", "content": content})
+    elif model in [
+        "DeepSeek-R1",
+    ]:
+        # gitee AI
+        new_msg_history = msg_history + [{"role": "user", "content": msg}]
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *new_msg_history,
+            ],
+            stream=False,
+            max_tokens=8192,
+            temperature=0.6,
+            top_p=0.7,
+            extra_body={
+                "top_k": 50,
+            },
+            frequency_penalty=0,
+        )
+        content = response.choices[0].message.content
+        new_msg_history.append({"role": "assistant", "content": content})
     else:
         raise ValueError(f"Model {model} not supported.")
 
@@ -709,6 +753,17 @@ def get_client_llm(model_name: str) -> Tuple[Any, str]:
         genai.configure(api_key=os.environ["GEMINI_API_KEY"])
         model = model_name.split("/")[-1]
         client = genai.GenerativeModel(model)
+    elif model_name in [
+        "gitee/DeepSeek-V3",
+        "gitee/DeepSeek-R1"
+    ]:
+        # gitee AI
+        client = openai.OpenAI(
+            base_url="https://ai.gitee.com/v1",
+            api_key=os.environ["GITEE_API_KEY"],
+            default_headers={"X-Failover-Enabled":"true"},
+        )
+        model = model_name.split("/")[-1]
     else:
         raise ValueError(f"Model {model_name} not supported.")
 
